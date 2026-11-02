@@ -1,0 +1,47 @@
+# Evolutionary Game Theory & Energy Sharing Configuration
+community:
+  total_members: 100
+  prosumer_fraction: 0.50 # 50 prosumers, 50 pure consumers
+  pv_capacity_per_member_kw: 5.0
+  battery_capacity_kwh: 10.0
+  battery_roundtrip_efficiency: 0.90
+  base_daily_load_kwh: 18.0
+
+market_pricing:
+  retail_import_tariff_per_kwh: 0.28
+  feed_in_tariff_per_kwh: 0.07
+  mid_market_p2p_price_per_kwh: 0.175 # Mid-rate between import tariff and export feed-in
+  grid_imbalance_penalty_per_kwh: 0.15
+
+evolutionary_dynamics:
+  replicator_step_size: 2.0
+  initial_sharing_proportion: 0.50
+  time_steps: 396 # test evaluation intervals
+
+risk_mechanisms:
+  B0_uncoordinated:
+    name: "B0: Uncoordinated Baseline"
+    forecast_aware: false
+    penalty_enabled: false
+    lambda_s: 0.0
+
+  B1_point_forecast:
+    name: "B1: Deterministic Point Forecast"
+    forecast_aware: true
+    penalty_enabled: false
+    lambda_s: 0.0
+
+  B2_static_reserve:
+    name: "B2: Static Reserve Margin"
+    forecast_aware: true
+    penalty_enabled: true
+    reserve_fraction: 0.15
+    lambda_s: 2.5
+
+  B3_adaptive_conformal:
+    name: "B3: Forecast-Aware Adaptive Conformal EGT"
+    forecast_aware: true
+    penalty_enabled: true
+    conformal_sigma_aware: true
+    lambda_s: 2.5
+

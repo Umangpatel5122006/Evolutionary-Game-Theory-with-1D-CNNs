@@ -1,0 +1,17 @@
+{
+  "id": "EXP-WS-001",
+  "name": "Original Weather Shock Experiment (Historical)",
+  "category": "Historical Baseline",
+  "component": "Resilience Testing",
+  "status": "Historical Record (Deprecated)",
+  "description": "Initial weather shock experiment at interval index 96.",
+  "metrics": {
+    "Reported_Collapse": "Severe",
+    "Actual_Observed": "Negligible"
+  },
+  "files": [
+    "results/original/tables/table_5_weather_shock_metrics.csv",
+    "results/original/figures/figure_6_weather_shock.png"
+  ],
+  "notes": "Interval 96 occurred at 21:30 (nighttime), rendering the solar shock ineffective."
+}

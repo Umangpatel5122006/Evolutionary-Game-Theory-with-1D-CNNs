@@ -1,0 +1,7 @@
+{
+  "Persistence_MAE_kW": 1881.66,
+  "Seasonal_Naive_MAE_kW": 1722.23,
+  "Historical_Diurnal_MAE_kW": 1527.04,
+  "TCN_Non_Overlapping_MAE_kW": 1955.15,
+  "Persistence_Non_Overlapping_MAE_kW": 1955.43
+}

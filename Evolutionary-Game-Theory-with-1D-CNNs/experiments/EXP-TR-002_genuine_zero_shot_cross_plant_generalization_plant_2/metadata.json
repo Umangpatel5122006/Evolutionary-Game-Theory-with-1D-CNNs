@@ -1,0 +1,20 @@
+{
+  "id": "EXP-TR-002",
+  "name": "Genuine Zero-Shot Cross-Plant Generalization (Plant 2)",
+  "category": "Corrected Primary",
+  "component": "Domain Generalization",
+  "status": "Validated",
+  "description": "Strict zero-shot transfer applying frozen Plant 1 feature and target scalers directly to unseen Plant 2 data without any target fine-tuning.",
+  "metrics": {
+    "Plant2_Persistence_MAE_kW": 1622.74,
+    "Plant2_Persistence_nMAE_pct": 6.25,
+    "Plant2_ZeroShot_MAE_kW": 1530.17,
+    "Plant2_ZeroShot_nMAE_pct": 5.89,
+    "Plant2_CapacityHarmonized_MAE_kW": 1598.69,
+    "Plant2_CapacityHarmonized_nMAE_pct": 6.15
+  },
+  "files": [
+    "results/corrected/tables/table_6_plant2_generalization.csv"
+  ],
+  "notes": "Zero-shot model outperforms Plant 2 persistence baseline by 0.36% nMAE (92.57 kW MAE reduction)."
+}

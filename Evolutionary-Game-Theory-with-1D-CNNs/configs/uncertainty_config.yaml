@@ -1,0 +1,19 @@
+# Uncertainty Quantification & Calibration Configuration
+mc_dropout:
+  val_forward_passes: 30
+  test_forward_passes: 50
+  enable_eval_dropout: true
+
+conformal_prediction:
+  framework: "Split Conformal Prediction"
+  nominal_coverage: 0.90 # 90% confidence level
+  eval_nominal_levels: [0.50, 0.60, 0.70, 0.80, 0.90, 0.95]
+  studentized_scores: true
+  epsilon: 1e-4
+  methods:
+    - "pooled_marginal"
+    - "joint_trajectory"
+    - "per_horizon"
+  nighttime_zero_enforcement: true
+  physics_non_negativity: true
+
