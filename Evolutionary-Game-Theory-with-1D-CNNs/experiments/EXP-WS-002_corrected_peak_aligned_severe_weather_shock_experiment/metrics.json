@@ -1,0 +1,9 @@
+{
+  "Shock_Start_Interval": 150,
+  "Shock_Duration_Hours": 6.0,
+  "Pre_Shock_Share": 0.87,
+  "Min_Shock_Share": 0.87,
+  "Post_Shock_Final_Share": 0.89,
+  "Cost_Increase_USD": 124.48,
+  "Recovered_95pct": true
+}

@@ -1,0 +1,39 @@
+# Data Preprocessing Configuration
+plant_1:
+  generation_path: "data/raw/Plant_1_Generation_Data.csv"
+  weather_path: "data/raw/Plant_1_Weather_Sensor_Data.csv"
+  rated_capacity_kw: 29150.21
+  dc_power_scale: 0.10 # Harmonize 10-Watt units to true kW
+  date_format: "%d-%m-%Y %H:%M"
+
+plant_2:
+  generation_path: "data/raw/Plant_2_Generation_Data.csv"
+  weather_path: "data/raw/Plant_2_Weather_Sensor_Data.csv"
+  rated_capacity_kw: 25979.76
+  dc_power_scale: 1.0 # Already in true kW
+  date_format: "%Y-%m-%d %H:%M:%S"
+
+windowing:
+  history_len: 192 # 48 hours (at 15-minute resolution)
+  horizon_len: 96  # 24 hours (day-ahead market horizon)
+  step_sliding: 1
+  step_non_overlapping: 96
+
+partitioning:
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  split_type: "chronological_strict_no_leakage"
+
+features:
+  - "AC_POWER"
+  - "DC_POWER"
+  - "IRRADIATION"
+  - "AMBIENT_TEMPERATURE"
+  - "MODULE_TEMPERATURE"
+
+target: "AC_POWER"
+night_hours:
+  start_hour: 19.0
+  end_hour: 5.0
+

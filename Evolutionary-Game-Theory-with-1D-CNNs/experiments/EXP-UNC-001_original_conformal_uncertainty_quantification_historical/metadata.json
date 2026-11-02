@@ -1,0 +1,18 @@
+{
+  "id": "EXP-UNC-001",
+  "name": "Original Conformal Uncertainty Quantification (Historical)",
+  "category": "Historical Baseline",
+  "component": "Uncertainty Quantification",
+  "status": "Historical Record (Deprecated)",
+  "description": "Initial split conformal prediction implementation.",
+  "metrics": {
+    "Empirical_Coverage_pct": 90.1,
+    "Nominal_pct": 90.0,
+    "MPIW_kW": 6200.0
+  },
+  "files": [
+    "results/original/tables/table_2_uncertainty_calibration.csv",
+    "results/original/figures/figure_3_uncertainty_calibration.png"
+  ],
+  "notes": "Lacked joint trajectory coverage and formal night zeroing."
+}

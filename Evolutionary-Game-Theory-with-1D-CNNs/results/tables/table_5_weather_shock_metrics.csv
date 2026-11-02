@@ -1,0 +1,2 @@
+Shock_Start_Interval,Shock_Duration_Hours,Pre_Shock_Share,Min_Shock_Share,Post_Shock_Final_Share,Recovered_95pct,Recovery_Hours,Trade_Lost_kWh,Cost_Increase ($)
+150,6.0,0.8702035846902788,0.870101227320875,0.8941980004383495,True,0.0,-13.13839702695023,124.48209448607167

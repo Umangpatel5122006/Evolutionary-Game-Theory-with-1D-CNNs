@@ -1,0 +1,25 @@
+# Temporal Convolutional Network (Diurnal Residual 1D-CNN) Configuration
+architecture:
+  model_type: "DiurnalResidualTCN"
+  in_channels: 5
+  horizon: 96
+  hidden_channels: [64, 128, 64]
+  kernel_sizes: [3, 5, 7]
+  dilations: [1, 2, 4]
+  dropout_rate: 0.15
+  activation: "GELU"
+  residual_connections: true
+  physics_constrained_relu: true
+
+training:
+  epochs: 25
+  batch_size: 32
+  learning_rate: 0.001
+  optimizer: "AdamW"
+  weight_decay: 0.0001
+  scheduler: "CosineAnnealingLR"
+  early_stopping_patience: 4
+  loss_function: "HuberLoss" # robust to cloud-passage transient spikes
+  checkpoint_selection_criterion: "validation_loss" # Strict validation selection, NO test snooping
+  seeds: [42, 123, 999]
+

@@ -1,0 +1,231 @@
+[
+  {
+    "id": "EXP-FC-001",
+    "name": "Original 1D-CNN Forecast (Historical)",
+    "category": "Historical Baseline",
+    "component": "Solar Forecasting",
+    "status": "Historical Record (Deprecated)",
+    "description": "Initial 1D-CNN point forecast using single seed (42) and sliding window evaluation with test-set checkpoint selection.",
+    "metrics": {
+      "Test_MAE_kW": 1813.4,
+      "Test_nMAE_pct": 6.22,
+      "Test_RMSE_kW": 3450.1
+    },
+    "files": [
+      "results/original/tables/table_1_forecast_metrics.csv",
+      "results/original/figures/figure_1_actual_vs_predicted.png"
+    ],
+    "notes": "Had test-set leakage in checkpoint selection and lacked true time-of-day diurnal profile baseline."
+  },
+  {
+    "id": "EXP-FC-002",
+    "name": "Corrected Diurnal Residual TCN Forecast",
+    "category": "Corrected Primary",
+    "component": "Solar Forecasting",
+    "status": "Validated",
+    "description": "Multi-scale residual TCN with strict validation-based checkpoint selection and multi-seed evaluation (42, 123, 456).",
+    "metrics": {
+      "Best_Test_MAE_kW": 1783.29,
+      "Best_Test_nMAE_pct": 6.12,
+      "Mean_Test_MAE_kW": 1815.39,
+      "MAE_std": 33.86
+    },
+    "files": [
+      "results/corrected/tables/table_1_forecast_metrics.csv",
+      "results/corrected/figures/figure_1_actual_vs_predicted.png",
+      "results/corrected/figures/figure_2_horizon_error.png"
+    ],
+    "notes": "Selected best model by validation MAE (1661.33 kW). Physical non-negativity and astronomical night constraints enforced."
+  },
+  {
+    "id": "EXP-FC-003",
+    "name": "Multi-Horizon Baselines Benchmark",
+    "category": "Benchmark",
+    "component": "Solar Forecasting",
+    "status": "Validated",
+    "description": "Rigorous comparison against Persistence (Lag-96), Seasonal Naive (Lag 96+192), and True Time-of-Day Diurnal Profile, across sliding and non-overlapping test sets.",
+    "metrics": {
+      "Persistence_MAE_kW": 1881.66,
+      "Seasonal_Naive_MAE_kW": 1722.23,
+      "Historical_Diurnal_MAE_kW": 1527.04,
+      "TCN_Non_Overlapping_MAE_kW": 1955.15,
+      "Persistence_Non_Overlapping_MAE_kW": 1955.43
+    },
+    "files": [
+      "results/corrected/tables/table_1_forecast_metrics.csv"
+    ],
+    "notes": "Historical diurnal profile indexes genuine time-of-day 15-min slot means from training data."
+  },
+  {
+    "id": "EXP-UNC-001",
+    "name": "Original Conformal Uncertainty Quantification (Historical)",
+    "category": "Historical Baseline",
+    "component": "Uncertainty Quantification",
+    "status": "Historical Record (Deprecated)",
+    "description": "Initial split conformal prediction implementation.",
+    "metrics": {
+      "Empirical_Coverage_pct": 90.1,
+      "Nominal_pct": 90.0,
+      "MPIW_kW": 6200.0
+    },
+    "files": [
+      "results/original/tables/table_2_uncertainty_calibration.csv",
+      "results/original/figures/figure_3_uncertainty_calibration.png"
+    ],
+    "notes": "Lacked joint trajectory coverage and formal night zeroing."
+  },
+  {
+    "id": "EXP-UNC-002",
+    "name": "Corrected Split Conformal UQ & Calibration",
+    "category": "Corrected Primary",
+    "component": "Uncertainty Quantification",
+    "status": "Validated",
+    "description": "Studentized split conformal prediction providing both pooled marginal coverage and joint trajectory coverage with physical zeroing.",
+    "metrics": {
+      "Pooled_PICP_pct": 88.7,
+      "Pooled_MPIW_kW": 6310.96,
+      "Pooled_Winkler_Score": 6711.66,
+      "Trajectory_Joint_PICP_pct": 67.85,
+      "Conformal_Quantile_q": 35.618
+    },
+    "files": [
+      "results/corrected/tables/table_2_uncertainty_calibration.csv",
+      "results/corrected/figures/figure_3_uncertainty_calibration.png"
+    ],
+    "notes": "Guarantees finite-sample distribution-free coverage on unseen test windows."
+  },
+  {
+    "id": "EXP-GT-001",
+    "name": "Original 4-Mechanism Replicator Dynamics (Historical)",
+    "category": "Historical Baseline",
+    "component": "Evolutionary Game Theory",
+    "status": "Historical Record (Deprecated)",
+    "description": "Initial evolutionary game comparison across mechanisms M0, M1, M2, M3.",
+    "metrics": {
+      "M0_Final_Share": 0.505,
+      "M1_Final_Share": 0.506,
+      "M2_Final_Share": 0.505,
+      "M3_Final_Share": 0.505
+    },
+    "files": [
+      "results/original/tables/table_3_model_comparison.csv",
+      "results/original/figures/figure_4_comparative_trajectories.png"
+    ],
+    "notes": "Mechanisms M2 and M3 showed negligible divergence due to low penalty weighting and unharmonized load inputs."
+  },
+  {
+    "id": "EXP-GT-002",
+    "name": "Corrected 4-Mechanism Controlled Game Ablation",
+    "category": "Corrected Primary",
+    "component": "Evolutionary Game Theory",
+    "status": "Validated",
+    "description": "Controlled comparison across B0 (Persistence), B1 (Static Diurnal), B2 (CNN Risk-Neutral), and B3 (Forecast-Aware Conformal EGT) under identical load profiles and shortfall penalties.",
+    "metrics": {
+      "B0_Final_Share": 0.50476,
+      "B1_Final_Share": 0.50587,
+      "B2_Final_Share": 0.50521,
+      "B3_Final_Share": 0.50474,
+      "B1_Realized_Savings_USD": 5.67,
+      "B2_Realized_Savings_USD": 3.62,
+      "B3_Realized_Savings_USD": 3.62
+    },
+    "files": [
+      "results/corrected/tables/table_3_model_comparison.csv",
+      "results/corrected/figures/figure_4_comparative_trajectories.png"
+    ],
+    "notes": "Demonstrates that risk-penalty reduces aggressive over-commitment, balancing traded kWh against shortfall exposure."
+  },
+  {
+    "id": "EXP-SEN-001",
+    "name": "Uncertainty Penalty & Tipping Point Bifurcation Sweep",
+    "category": "Sensitivity Analysis",
+    "component": "Evolutionary Game Theory",
+    "status": "Validated",
+    "description": "Systematic parameter sweep over uncertainty penalty multipliers (0.0 to 15.0) and initial sharing conditions (0.20, 0.50, 0.80) to detect behavioral phase transitions.",
+    "metrics": {
+      "Max_Sensitivity_Uncertainty_pct": 3.48,
+      "Peak_Gradient": -0.04,
+      "Final_Share_Multiplier_0": 0.5052,
+      "Final_Share_Multiplier_15": 0.4015
+    },
+    "files": [
+      "results/corrected/tables/table_4_tipping_point_sweep.csv",
+      "results/corrected/figures/figure_5_tipping_point.png"
+    ],
+    "notes": "Empirically disproves sharp catastrophic collapse; proves smooth monotonic decay under high risk penalty."
+  },
+  {
+    "id": "EXP-WS-001",
+    "name": "Original Weather Shock Experiment (Historical)",
+    "category": "Historical Baseline",
+    "component": "Resilience Testing",
+    "status": "Historical Record (Deprecated)",
+    "description": "Initial weather shock experiment at interval index 96.",
+    "metrics": {
+      "Reported_Collapse": "Severe",
+      "Actual_Observed": "Negligible"
+    },
+    "files": [
+      "results/original/tables/table_5_weather_shock_metrics.csv",
+      "results/original/figures/figure_6_weather_shock.png"
+    ],
+    "notes": "Interval 96 occurred at 21:30 (nighttime), rendering the solar shock ineffective."
+  },
+  {
+    "id": "EXP-WS-002",
+    "name": "Corrected Peak-Aligned Severe Weather Shock Experiment",
+    "category": "Corrected Primary",
+    "component": "Resilience Testing",
+    "status": "Validated",
+    "description": "Daytime peak-aligned weather shock (interval 150 = 11:00 AM) with 75% irradiance loss over 6 hours.",
+    "metrics": {
+      "Shock_Start_Interval": 150,
+      "Shock_Duration_Hours": 6.0,
+      "Pre_Shock_Share": 0.87,
+      "Min_Shock_Share": 0.87,
+      "Post_Shock_Final_Share": 0.89,
+      "Cost_Increase_USD": 124.48,
+      "Recovered_95pct": true
+    },
+    "files": [
+      "results/corrected/tables/table_5_weather_shock_metrics.csv",
+      "results/corrected/figures/figure_6_weather_shock.png"
+    ],
+    "notes": "Quantifies exact financial impact ($124.48 cost increase) and confirms prosumer strategy resilience."
+  },
+  {
+    "id": "EXP-TR-001",
+    "name": "Original Plant 2 Cross-Plant Transfer (Historical)",
+    "category": "Historical Baseline",
+    "component": "Domain Generalization",
+    "status": "Historical Record (Deprecated)",
+    "description": "Cross-plant evaluation where feature and target scalers were erroneously re-fitted on target Plant 2 data.",
+    "metrics": {
+      "Reported_nMAE_pct": 4.1
+    },
+    "files": [
+      "results/original/tables/table_6_plant2_generalization.csv"
+    ],
+    "notes": "Violated genuine zero-shot transfer protocol due to target-set re-scaling."
+  },
+  {
+    "id": "EXP-TR-002",
+    "name": "Genuine Zero-Shot Cross-Plant Generalization (Plant 2)",
+    "category": "Corrected Primary",
+    "component": "Domain Generalization",
+    "status": "Validated",
+    "description": "Strict zero-shot transfer applying frozen Plant 1 feature and target scalers directly to unseen Plant 2 data without any target fine-tuning.",
+    "metrics": {
+      "Plant2_Persistence_MAE_kW": 1622.74,
+      "Plant2_Persistence_nMAE_pct": 6.25,
+      "Plant2_ZeroShot_MAE_kW": 1530.17,
+      "Plant2_ZeroShot_nMAE_pct": 5.89,
+      "Plant2_CapacityHarmonized_MAE_kW": 1598.69,
+      "Plant2_CapacityHarmonized_nMAE_pct": 6.15
+    },
+    "files": [
+      "results/corrected/tables/table_6_plant2_generalization.csv"
+    ],
+    "notes": "Zero-shot model outperforms Plant 2 persistence baseline by 0.36% nMAE (92.57 kW MAE reduction)."
+  }
+]

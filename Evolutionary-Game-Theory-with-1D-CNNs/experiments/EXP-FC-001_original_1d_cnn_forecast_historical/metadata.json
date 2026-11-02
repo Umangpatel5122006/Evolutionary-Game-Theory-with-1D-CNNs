@@ -1,0 +1,18 @@
+{
+  "id": "EXP-FC-001",
+  "name": "Original 1D-CNN Forecast (Historical)",
+  "category": "Historical Baseline",
+  "component": "Solar Forecasting",
+  "status": "Historical Record (Deprecated)",
+  "description": "Initial 1D-CNN point forecast using single seed (42) and sliding window evaluation with test-set checkpoint selection.",
+  "metrics": {
+    "Test_MAE_kW": 1813.4,
+    "Test_nMAE_pct": 6.22,
+    "Test_RMSE_kW": 3450.1
+  },
+  "files": [
+    "results/original/tables/table_1_forecast_metrics.csv",
+    "results/original/figures/figure_1_actual_vs_predicted.png"
+  ],
+  "notes": "Had test-set leakage in checkpoint selection and lacked true time-of-day diurnal profile baseline."
+}

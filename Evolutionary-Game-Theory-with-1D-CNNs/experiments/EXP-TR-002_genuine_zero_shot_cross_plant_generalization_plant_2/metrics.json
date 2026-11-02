@@ -1,0 +1,8 @@
+{
+  "Plant2_Persistence_MAE_kW": 1622.74,
+  "Plant2_Persistence_nMAE_pct": 6.25,
+  "Plant2_ZeroShot_MAE_kW": 1530.17,
+  "Plant2_ZeroShot_nMAE_pct": 5.89,
+  "Plant2_CapacityHarmonized_MAE_kW": 1598.69,
+  "Plant2_CapacityHarmonized_nMAE_pct": 6.15
+}

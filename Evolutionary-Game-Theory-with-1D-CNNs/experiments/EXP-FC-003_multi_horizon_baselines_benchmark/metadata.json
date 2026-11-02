@@ -1,0 +1,19 @@
+{
+  "id": "EXP-FC-003",
+  "name": "Multi-Horizon Baselines Benchmark",
+  "category": "Benchmark",
+  "component": "Solar Forecasting",
+  "status": "Validated",
+  "description": "Rigorous comparison against Persistence (Lag-96), Seasonal Naive (Lag 96+192), and True Time-of-Day Diurnal Profile, across sliding and non-overlapping test sets.",
+  "metrics": {
+    "Persistence_MAE_kW": 1881.66,
+    "Seasonal_Naive_MAE_kW": 1722.23,
+    "Historical_Diurnal_MAE_kW": 1527.04,
+    "TCN_Non_Overlapping_MAE_kW": 1955.15,
+    "Persistence_Non_Overlapping_MAE_kW": 1955.43
+  },
+  "files": [
+    "results/corrected/tables/table_1_forecast_metrics.csv"
+  ],
+  "notes": "Historical diurnal profile indexes genuine time-of-day 15-min slot means from training data."
+}

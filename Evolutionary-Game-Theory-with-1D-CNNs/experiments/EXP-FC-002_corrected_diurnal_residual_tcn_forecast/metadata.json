@@ -1,0 +1,20 @@
+{
+  "id": "EXP-FC-002",
+  "name": "Corrected Diurnal Residual TCN Forecast",
+  "category": "Corrected Primary",
+  "component": "Solar Forecasting",
+  "status": "Validated",
+  "description": "Multi-scale residual TCN with strict validation-based checkpoint selection and multi-seed evaluation (42, 123, 456).",
+  "metrics": {
+    "Best_Test_MAE_kW": 1783.29,
+    "Best_Test_nMAE_pct": 6.12,
+    "Mean_Test_MAE_kW": 1815.39,
+    "MAE_std": 33.86
+  },
+  "files": [
+    "results/corrected/tables/table_1_forecast_metrics.csv",
+    "results/corrected/figures/figure_1_actual_vs_predicted.png",
+    "results/corrected/figures/figure_2_horizon_error.png"
+  ],
+  "notes": "Selected best model by validation MAE (1661.33 kW). Physical non-negativity and astronomical night constraints enforced."
+}
