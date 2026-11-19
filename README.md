@@ -37,7 +37,6 @@ Evolutionary-Game-Theory-with-1D-CNNs/ (Repository and project root)
 ├── models/
 ├── paper/
 ├── reports/
-├── research_archive/
 ├── research_tracks/
 ├── results/
 ├── results_original/
