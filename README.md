@@ -377,14 +377,3 @@ jupyter notebook Forecast_Aware_Evolutionary_Game_Theory.ipynb
 ```
 
 ---
-
-## 📜 Citation & License
-This project is open-source under the [MIT License](LICENSE).
-```bibtex
-@article{patel2026forecastaware,
-  title={Forecast-Aware Evolutionary Game Theory for Adaptive Energy Sharing in Renewable Energy Communities},
-  author={Patel, Vivek and Patel, Umang and Gupta, Ojash and Dubey, Dhiraj},
-  journal={Department of Artificial Intelligence, SVNIT Surat, Gujarat},
-  year={2026}
-}
-```
