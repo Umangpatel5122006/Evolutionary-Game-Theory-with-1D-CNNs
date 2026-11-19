@@ -1,8 +1,9 @@
 """
 preprocess.py
-Data preprocessing module for Solar Power Generation and Weather Sensor data.
-Handles timestamp parsing, inverter aggregation, missing data imputation,
-cyclic feature engineering, chronological train/val/test splitting, and leak-free scaling.
+Robust data preprocessing module for Solar Power Generation and Weather Sensor data.
+Handles timestamp parsing, inverter aggregation, DC/AC unit harmonization,
+astronomical night enforcement, chronological train/val/test splitting without boundary leakage,
+and genuine zero-shot transfer transformation for cross-plant evaluation.
 """
 
 import os
@@ -13,8 +14,9 @@ from sklearn.preprocessing import StandardScaler
 
 def load_and_clean_plant_data(gen_path, weather_path, is_plant1=True):
     """
-    Loads generation and weather data, parses timestamps, aggregates inverters,
-    and merges onto a continuous 15-minute grid.
+    Loads generation and weather data, parses timestamps, aggregates across inverters,
+    harmonizes physical units (Plant 1 DC power divided by 10 to match Plant 2 kW scale),
+    and aligns onto a continuous 15-minute grid.
     """
     df_gen = pd.read_csv(gen_path)
     df_weather = pd.read_csv(weather_path)
@@ -27,6 +29,13 @@ def load_and_clean_plant_data(gen_path, weather_path, is_plant1=True):
 
     df_weather['DATE_TIME'] = pd.to_datetime(df_weather['DATE_TIME'])
 
+    # Harmonize Plant 1 DC power:
+    # In Plant 1, raw DC_POWER was logged in 10-Watt units (median DC/AC ratio ~10.18).
+    # In Plant 2, DC_POWER is in kW (median DC/AC ratio ~1.02).
+    # Scaling Plant 1 DC power by 0.10 aligns both plants onto the exact same physical kW units.
+    if is_plant1:
+        df_gen['DC_POWER'] = df_gen['DC_POWER'] * 0.10
+
     # Aggregate generation across inverters
     agg_gen = df_gen.groupby('DATE_TIME').agg({
         'AC_POWER': 'sum',
@@ -35,7 +44,7 @@ def load_and_clean_plant_data(gen_path, weather_path, is_plant1=True):
         'TOTAL_YIELD': 'sum'
     }).reset_index()
 
-    # Aggregate weather (typically 1 sensor, but groupby ensures unique timestamps)
+    # Aggregate weather sensor data
     agg_weather = df_weather.groupby('DATE_TIME').agg({
         'AMBIENT_TEMPERATURE': 'mean',
         'MODULE_TEMPERATURE': 'mean',
@@ -48,25 +57,25 @@ def load_and_clean_plant_data(gen_path, weather_path, is_plant1=True):
     full_idx = pd.date_range(start=start_time, end=end_time, freq='15min')
     grid_df = pd.DataFrame({'DATE_TIME': full_idx})
 
-    # Merge
+    # Merge onto continuous grid
     merged = pd.merge(grid_df, agg_gen, on='DATE_TIME', how='left')
     merged = pd.merge(merged, agg_weather, on='DATE_TIME', how='left')
 
-    # Impute missing values with physical domain rules
-    # Nighttime (hour < 5 or hour >= 19) solar power and irradiation are 0
+    # Impute missing values with physical domain constraints:
+    # Nighttime (hour < 5 or hour >= 19): solar power and irradiation are physically 0
     night_mask = (merged['DATE_TIME'].dt.hour < 5) | (merged['DATE_TIME'].dt.hour >= 19)
     merged.loc[night_mask, 'AC_POWER'] = merged.loc[night_mask, 'AC_POWER'].fillna(0.0)
     merged.loc[night_mask, 'DC_POWER'] = merged.loc[night_mask, 'DC_POWER'].fillna(0.0)
     merged.loc[night_mask, 'IRRADIATION'] = merged.loc[night_mask, 'IRRADIATION'].fillna(0.0)
 
-    # Linear interpolation for short missing daytime gaps, then forward/backward fill
+    # Impute remaining missing daytime gaps via forward/backward fill and interpolation
     merged['AC_POWER'] = merged['AC_POWER'].interpolate(method='linear').clip(lower=0.0).bfill().ffill()
     merged['DC_POWER'] = merged['DC_POWER'].interpolate(method='linear').clip(lower=0.0).bfill().ffill()
     merged['IRRADIATION'] = merged['IRRADIATION'].interpolate(method='linear').clip(lower=0.0).bfill().ffill()
     merged['AMBIENT_TEMPERATURE'] = merged['AMBIENT_TEMPERATURE'].interpolate(method='linear').bfill().ffill()
     merged['MODULE_TEMPERATURE'] = merged['MODULE_TEMPERATURE'].interpolate(method='linear').bfill().ffill()
 
-    # Feature engineering: Cyclic time-of-day and day-of-week
+    # Time-of-day and Day-of-week cyclic features
     time_of_day = merged['DATE_TIME'].dt.hour + merged['DATE_TIME'].dt.minute / 60.0
     merged['sin_tod'] = np.sin(2 * np.pi * time_of_day / 24.0)
     merged['cos_tod'] = np.cos(2 * np.pi * time_of_day / 24.0)
@@ -76,6 +85,17 @@ def load_and_clean_plant_data(gen_path, weather_path, is_plant1=True):
     merged['cos_dow'] = np.cos(2 * np.pi * day_of_week / 7.0)
 
     return merged
+
+
+def get_astronomical_night_mask(dates_array):
+    """
+    Returns boolean array indicating nighttime periods (hour < 5 or hour >= 19)
+    where solar generation is physically 0 kW.
+    Works on arrays of numpy.datetime64 or pandas Timestamps.
+    """
+    d_dt = pd.to_datetime(dates_array.flatten())
+    hours = (d_dt.hour + d_dt.minute / 60.0).values.reshape(dates_array.shape)
+    return (hours < 5.0) | (hours >= 19.0)
 
 
 def create_sliding_windows(df, feature_cols, target_col='AC_POWER', history_len=192, horizon_len=96, step=1):
@@ -107,7 +127,7 @@ def create_sliding_windows(df, feature_cols, target_col='AC_POWER', history_len=
 
 
 def prepare_chronological_splits(df, feature_cols, target_col='AC_POWER', history_len=192, horizon_len=96,
-                                  train_ratio=0.70, val_ratio=0.15):
+                                  train_ratio=0.70, val_ratio=0.15, test_step=1):
     """
     Splits continuous time series chronologically to prevent future information leakage:
     1. Splits dataframe into train, val, and test partitions.
@@ -133,7 +153,7 @@ def prepare_chronological_splits(df, feature_cols, target_col='AC_POWER', histor
     target_scaler = StandardScaler()
     target_scaler.fit(train_df[[target_col]].values)
 
-    def scale_and_window(partition_df):
+    def scale_and_window(partition_df, step=1):
         scaled_features = feature_scaler.transform(partition_df[feature_cols].values)
         scaled_target = target_scaler.transform(partition_df[[target_col]].values).flatten()
 
@@ -143,41 +163,63 @@ def prepare_chronological_splits(df, feature_cols, target_col='AC_POWER', histor
 
         X, y, dates = create_sliding_windows(
             part_copy, feature_cols, target_col=target_col,
-            history_len=history_len, horizon_len=horizon_len
+            history_len=history_len, horizon_len=horizon_len, step=step
         )
         return X, y, dates
 
-    X_train, y_train, dates_train = scale_and_window(train_df)
-    X_val, y_val, dates_val = scale_and_window(val_df)
-    X_test, y_test, dates_test = scale_and_window(test_df)
+    X_train, y_train, dates_train = scale_and_window(train_df, step=1)
+    X_val, y_val, dates_val = scale_and_window(val_df, step=1)
+    X_test, y_test, dates_test = scale_and_window(test_df, step=test_step)
+
+    # Also generate non-overlapping test evaluation set (step=96)
+    X_test_nonoverlap, y_test_nonoverlap, dates_test_nonoverlap = scale_and_window(test_df, step=horizon_len)
 
     scaler_dict = {
         'feature_scaler': feature_scaler,
         'target_scaler': target_scaler,
         'target_mean': target_scaler.mean_[0],
         'target_std': target_scaler.scale_[0],
-        'rated_capacity': df[target_col].max()
+        'rated_capacity': float(df[target_col].max())
     }
 
     return {
         'train': (X_train, y_train, dates_train),
         'val': (X_val, y_val, dates_val),
         'test': (X_test, y_test, dates_test),
+        'test_nonoverlap': (X_test_nonoverlap, y_test_nonoverlap, dates_test_nonoverlap),
         'scalers': scaler_dict,
         'raw_df': df,
         'feature_cols': feature_cols
     }
 
 
-if __name__ == '__main__':
-    print("Testing preprocess module...")
-    df_p1 = load_and_clean_plant_data('Plant_1_Generation_Data.csv', 'Plant_1_Weather_Sensor_Data.csv', is_plant1=True)
-    print(f"Loaded Plant 1: {len(df_p1)} intervals ({df_p1['DATE_TIME'].min()} to {df_p1['DATE_TIME'].max()})")
-    
-    feature_cols = ['AC_POWER', 'DC_POWER', 'AMBIENT_TEMPERATURE', 'MODULE_TEMPERATURE', 'IRRADIATION',
-                    'sin_tod', 'cos_tod', 'sin_dow', 'cos_dow']
-    data_dict = prepare_chronological_splits(df_p1, feature_cols)
-    print("Train X shape:", data_dict['train'][0].shape, "y shape:", data_dict['train'][1].shape)
-    print("Val X shape:", data_dict['val'][0].shape, "y shape:", data_dict['val'][1].shape)
-    print("Test X shape:", data_dict['test'][0].shape, "y shape:", data_dict['test'][1].shape)
-    print("Preprocessor test passed!")
+def prepare_genuine_zero_shot_transfer(df_target, feature_cols, source_scalers, target_col='AC_POWER',
+                                        history_len=192, horizon_len=96, step=1):
+    """
+    Genuinely zero-shot prepares a target plant dataset (Plant 2) by:
+    1. Using the fitted feature scaler from the source plant (Plant 1) ONLY.
+    2. No parameters, means, or variances are fitted on the target plant.
+    3. Inverse scaling will use the source plant's target scaler.
+    """
+    feature_scaler = source_scalers['feature_scaler']
+    target_scaler = source_scalers['target_scaler']
+
+    scaled_features = feature_scaler.transform(df_target[feature_cols].values)
+    scaled_target = target_scaler.transform(df_target[[target_col]].values).flatten()
+
+    target_copy = df_target.copy()
+    target_copy[feature_cols] = scaled_features
+    target_copy[target_col] = scaled_target
+
+    X, y, dates = create_sliding_windows(
+        target_copy, feature_cols, target_col=target_col,
+        history_len=history_len, horizon_len=horizon_len, step=step
+    )
+
+    # Ground truth in actual physical units (kW)
+    y_actual = df_target[target_col].values
+    actual_windows = []
+    for i in range(0, len(df_target) - history_len - horizon_len + 1, step):
+        actual_windows.append(y_actual[i + history_len : i + history_len + horizon_len])
+
+    return X, y, dates, np.array(actual_windows), float(df_target[target_col].max())
